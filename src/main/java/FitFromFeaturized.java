@@ -1,4 +1,4 @@
-import dataHelpers.FlowerDataSetIteratorFeaturized;
+import dataHelpers.CornDataSetIteratorFeaturized;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.conf.distribution.Distribution;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
@@ -23,7 +23,7 @@ public class FitFromFeaturized {
 
     private static final String featureExtractionLayer = "fc2";
     private static final long seed = 12345;
-    private static final int numClasses = 5;
+    private static final int numClasses = 3;
     private static final int nEpochs = 3;
 
     public static void main(String[] args) throws IOException {
@@ -60,8 +60,8 @@ public class FitFromFeaturized {
                 .build();
         log.info(vgg16Transfer.summary());
 
-        DataSetIterator trainIter = FlowerDataSetIteratorFeaturized.trainIterator();
-        DataSetIterator testIter = FlowerDataSetIteratorFeaturized.testIterator();
+        DataSetIterator trainIter = CornDataSetIteratorFeaturized.trainIterator();
+        DataSetIterator testIter = CornDataSetIteratorFeaturized.testIterator();
 
         //Instantiate the transfer learning helper to fit and output from the featurized dataset
         //The .unfrozenGraph() is the unfrozen subset of the computation graph passed in.
