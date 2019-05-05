@@ -13,21 +13,12 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Iterator for featurized data.
- *
- * @author susaneraly on 3/10/17.
- */
 public class FlowerDataSetIteratorFeaturized {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(FlowerDataSetIteratorFeaturized.class);
 
     private static final int trainPerc = 80;
     private static final int batchSize = 15;
     private static String featureExtractorLayer = "fc2";
-
-    public static void setup(String featureExtractorLayerArg) {
-        featureExtractorLayer = featureExtractorLayerArg;
-    }
 
     public static DataSetIterator trainIterator() throws IOException {
         runFeaturize();

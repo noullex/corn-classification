@@ -18,13 +18,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Random;
 
-/**
- * Automatically downloads the dataset from
- * http://download.tensorflow.org/example_images/flower_photos.tgz
- * and untar's it to the users home directory
- *
- * @author susaneraly on 3/9/17.
- */
 public class FlowerDataSetIterator {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(FlowerDataSetIterator.class);
 

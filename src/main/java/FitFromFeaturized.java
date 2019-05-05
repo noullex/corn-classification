@@ -18,19 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-/**
- * @author susaneraly on 3/10/17.
- * <p>
- * Important:
- * Run the class "FeaturizePreSave" before attempting to run this. The outputs at the boundary of the frozen and unfrozen
- * vertices of a model are saved. These are referred to as "featurized" datasets in this description.
- * On a dataset of about 3000 images which is what is downloaded this can take "a while"
- * <p>
- * Here we see how the transfer learning helper can be used to fit from a featurized datasets.
- * We attempt to train the same model architecture as the one in "EditLastLayerOthersFrozen".
- * Since the helper avoids the forward pass through the frozen layers we save on computation time when running multiple epochs.
- * In this manner, users can iterate quickly tweaking learning rates, weight initialization etc` to settle on a model that gives good results.
- */
 public class FitFromFeaturized {
     private static final Logger log = LoggerFactory.getLogger(FitFromFeaturized.class);
 
