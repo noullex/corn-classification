@@ -18,59 +18,45 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class FitFromFeaturized {
-    private static final Logger log = LoggerFactory.getLogger(FitFromFeaturized.class);
+import static utils.Constants.*;
 
-    private static final String featureExtractionLayer = "fc2";
-    private static final long seed = 12345;
-    private static final int numClasses = 3;
-    private static final int nEpochs = 3;
+public class Controller {
 
-    public static void main(String[] args) throws IOException {
+    private static final Logger log = LoggerFactory.getLogger(Controller.class);
 
-        //Import vgg
-        //Note that the model imported does not have an output layer (check printed summary)
-        //  nor any training related configs (model from keras was imported with only weights and json)
-        log.info("\n\nLoading org.deeplearning4j.transferlearning.vgg16...\n\n");
+    public void trainNetwork() throws IOException, InterruptedException {
+        log.info("Loading VGG16 model");
         ZooModel zooModel = VGG16.builder().build();
         ComputationGraph vgg16 = (ComputationGraph) zooModel.initPretrained();
         log.info(vgg16.summary());
 
-        //Decide on a fine tune configuration to use.
-        //In cases where there already exists a setting the fine tune setting will
-        // override the setting for all layers that are not "frozen".
         FineTuneConfiguration fineTuneConf = new FineTuneConfiguration.Builder()
                 .updater(new Nesterovs(3e-5, 0.9))
-                .seed(seed)
+                .seed(SEED)
                 .build();
 
-        Distribution distribution = new NormalDistribution(0, 0.2 * (2.0 / (4096 + numClasses)));
-        //Construct a new model with the intended architecture and print summary
+        Distribution distribution = new NormalDistribution(0, 0.2 * (2.0 / (4096 + NUMBER_OF_CLASSES)));
         ComputationGraph vgg16Transfer = new TransferLearning.GraphBuilder(vgg16)
                 .fineTuneConfiguration(fineTuneConf)
-                .setFeatureExtractor(featureExtractionLayer) //the specified layer and below are "frozen"
-                .removeVertexKeepConnections("predictions") //replace the functionality of the final vertex
+                .setFeatureExtractor(FEATURE_EXTRACTION_LAYER)
+                .removeVertexKeepConnections("predictions")
                 .addLayer("predictions",
                         new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                                .nIn(4096).nOut(numClasses)
+                                .nIn(4096).nOut(NUMBER_OF_CLASSES)
                                 .weightInit(distribution)
-                                .dist(distribution) //This weight init dist gave better results than Xavier
+                                .dist(distribution)
                                 .activation(Activation.SOFTMAX).build(),
-                        "fc2")
+                        FEATURE_EXTRACTION_LAYER)
                 .build();
         log.info(vgg16Transfer.summary());
 
         DataSetIterator trainIter = CornDataSetIteratorFeaturized.trainIterator();
         DataSetIterator testIter = CornDataSetIteratorFeaturized.testIterator();
 
-        //Instantiate the transfer learning helper to fit and output from the featurized dataset
-        //The .unfrozenGraph() is the unfrozen subset of the computation graph passed in.
-        //If using with a UI or a listener attach them directly to the unfrozenGraph instance
-        //With each iteration updated params from unfrozenGraph are copied over to the original model
         TransferLearningHelper transferLearningHelper = new TransferLearningHelper(vgg16Transfer);
         log.info(transferLearningHelper.unfrozenGraph().summary());
 
-        for (int epoch = 0; epoch < nEpochs; epoch++) {
+        for (int epoch = 0; epoch < NUMBER_OF_EPOCHS; epoch++) {
             if (epoch == 0) {
                 Evaluation eval = transferLearningHelper.unfrozenGraph().evaluate(testIter);
                 log.info("Eval stats BEFORE fit.....");
