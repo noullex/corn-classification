@@ -19,7 +19,7 @@ import static utils.Constants.*;
 
 public class CornExtractor {
 
-    public void extractCorns() throws IOException, InterruptedException {
+    public static void extractCorns() throws IOException, InterruptedException {
         File backgroundFile = Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE);
         BufferedImage background = ImageIO.read(backgroundFile);
 
@@ -41,7 +41,7 @@ public class CornExtractor {
         }
     }
 
-    private List<Corn> getCornsFromImage(BufferedImage image, BufferedImage background) throws InterruptedException {
+    private static List<Corn> getCornsFromImage(BufferedImage image, BufferedImage background) throws InterruptedException {
         byte[][] binaryImage = Binarizer.binarize(Binarizer.subtract(background, image));
         Queue<Point> curPoints = new Queue<Point>();
         List<Corn> result = new ArrayList<Corn>();
@@ -83,7 +83,7 @@ public class CornExtractor {
     }
 
 
-    private void saveCornsImages(BufferedImage originalImage, String type, List<Corn> corns) throws IOException {
+    private static void saveCornsImages(BufferedImage originalImage, String type, List<Corn> corns) throws IOException {
         File folder = new File(EXTRACTED_DATA_FOLDER + type);
         folder.mkdirs();
         for (int i = 0; i < corns.size(); i++) {
@@ -96,7 +96,7 @@ public class CornExtractor {
         }
     }
 
-    public class Corn {
+    public static class Corn {
         int minX, minY, maxX, maxY;
         List<Point> points = new ArrayList<Point>();
     }
