@@ -2,8 +2,7 @@
 *.iml
 .idea
 out
+target/
 
 #NN files
-trainFolder/
-testFolder/
 extracted-corns/
