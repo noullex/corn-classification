@@ -5,7 +5,6 @@ import org.datavec.api.io.labels.ParentPathLabelGenerator;
 import org.datavec.api.split.FileSplit;
 import org.datavec.api.split.InputSplit;
 import org.datavec.image.recordreader.ImageRecordReader;
-import org.datavec.image.transform.WarpImageTransform;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.VGG16ImagePreProcessor;
@@ -15,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
-import static org.bytedeco.javacpp.opencv_core.BORDER_REPLICATE;
 import static org.datavec.image.loader.BaseImageLoader.ALLOWED_FORMATS;
 import static utils.Constants.*;
 
@@ -45,8 +43,7 @@ public class CornDataSetIterator {
 
     private static DataSetIterator makeIterator(InputSplit sample) throws IOException {
         ImageRecordReader recordReader = new ImageRecordReader(HEIGHT, WIDTH, CHANNELS, labelMaker);
-        WarpImageTransform transform = new WarpImageTransform(10).borderMode(BORDER_REPLICATE);
-        recordReader.initialize(sample, transform);
+        recordReader.initialize(sample);
         DataSetIterator iter = new RecordReaderDataSetIterator(recordReader, BATCH_SIZE, 1, NUMBER_OF_CLASSES);
         iter.setPreProcessor(new VGG16ImagePreProcessor());
         return iter;

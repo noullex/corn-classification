@@ -43,8 +43,8 @@ public class CornExtractor {
 
     private static List<Corn> getCornsFromImage(BufferedImage image, BufferedImage background) throws InterruptedException {
         byte[][] binaryImage = Binarizer.binarize(Binarizer.subtract(background, image));
-        Queue<Point> curPoints = new Queue<Point>();
-        List<Corn> result = new ArrayList<Corn>();
+        Queue<Point> curPoints = new Queue<>();
+        List<Corn> result = new ArrayList<>();
         byte curLabel = 2;
         for (int x = 0; x < binaryImage.length; x++) {
             for (int y = 0; y < binaryImage[0].length; y++) {
@@ -98,6 +98,6 @@ public class CornExtractor {
 
     public static class Corn {
         int minX, minY, maxX, maxY;
-        List<Point> points = new ArrayList<Point>();
+        List<Point> points = new ArrayList<>();
     }
 }
