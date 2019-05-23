@@ -1,4 +1,4 @@
-package utils.imageProcessing;
+package utils.imagePreprocessing;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

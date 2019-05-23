@@ -1,4 +1,4 @@
-package utils.imageProcessing;
+package utils.imagePreprocessing;
 
 import sun.misc.Queue;
 import utils.Utils;
@@ -31,11 +31,13 @@ public class CornExtractor {
             if (listOfFiles == null || listOfFiles.length == 0) {
                 throw new IllegalArgumentException(String.format("There are no images for type %s", type));
             }
+            int fileNumber = 1;
             for (File file : listOfFiles) {
                 if (file.isFile()) {
                     BufferedImage image = ImageIO.read(file);
                     List<Corn> corns = getCornsFromImage(image, background);
-                    saveCornsImages(image, type, corns);
+                    saveCornsImages(image, type, fileNumber, corns);
+                    fileNumber++;
                 }
             }
         }
@@ -83,7 +85,7 @@ public class CornExtractor {
     }
 
 
-    private static void saveCornsImages(BufferedImage originalImage, String type, List<Corn> corns) throws IOException {
+    private static void saveCornsImages(BufferedImage originalImage, String type, int fileNumber, List<Corn> corns) throws IOException {
         File folder = new File(EXTRACTED_DATA_FOLDER + type);
         folder.mkdirs();
         for (int i = 0; i < corns.size(); i++) {
@@ -92,7 +94,8 @@ public class CornExtractor {
             for (Point pixel : corn.points) {
                 cornImage.setRGB(pixel.x - corn.minX, pixel.y - corn.minY, originalImage.getRGB(pixel.x, pixel.y));
             }
-            ImageIO.write(cornImage, "png", new File(EXTRACTED_DATA_FOLDER + type, type + "-" + i + ".png"));
+            ImageIO.write(cornImage, "png", new File(EXTRACTED_DATA_FOLDER + type,
+                    type + "-" + fileNumber + "-" + i + ".png"));
         }
     }
 

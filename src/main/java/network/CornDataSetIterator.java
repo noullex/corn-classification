@@ -1,4 +1,4 @@
-package dataHelpers;
+package network;
 
 import org.datavec.api.io.filters.BalancedPathFilter;
 import org.datavec.api.io.labels.ParentPathLabelGenerator;
@@ -8,7 +8,7 @@ import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.VGG16ImagePreProcessor;
-import utils.imageProcessing.CornExtractor;
+import utils.imagePreprocessing.CornExtractor;
 
 import java.io.File;
 import java.io.IOException;

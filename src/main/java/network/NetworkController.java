@@ -1,4 +1,6 @@
-import dataHelpers.CornDataSetIterator;
+package network;
+
+import org.datavec.image.loader.NativeImageLoader;
 import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -13,23 +15,28 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.ui.api.UIServer;
 import org.deeplearning4j.ui.stats.StatsListener;
 import org.deeplearning4j.ui.storage.InMemoryStatsStorage;
+import org.deeplearning4j.util.ModelSerializer;
 import org.deeplearning4j.zoo.PretrainedType;
 import org.deeplearning4j.zoo.ZooModel;
 import org.deeplearning4j.zoo.model.VGG16;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static utils.Constants.*;
 
-public class Controller {
+public class NetworkController {
 
-    private static final Logger log = LoggerFactory.getLogger(Controller.class);
+    private static final Logger log = LoggerFactory.getLogger(NetworkController.class);
 
     public void trainNetwork() throws IOException, InterruptedException {
         log.info("Loading VGG16 model");
@@ -72,6 +79,7 @@ public class Controller {
         for (int epoch = 0; epoch < NUMBER_OF_EPOCHS; epoch++) {
             int iter = 0;
             while (trainIter.hasNext()) {
+                log.info("Iteration #" + (iter + 1));
                 DataSet trained = trainIter.next();
                 vgg16Transfer.fit(trained);
                 if (iter % 10 == 0) {
@@ -83,8 +91,32 @@ public class Controller {
                 iter++;
             }
             trainIter.reset();
-            log.info("Epoch #" + epoch + " complete");
+            log.info("Epoch #" + (epoch + 1) + " complete");
         }
         log.info("Model build complete");
+
+        File locationToSave = new File("trained-model.zip");
+        ModelSerializer.writeModel(vgg16Transfer, locationToSave, true);
+    }
+
+    public void testNetwork() throws IOException {
+        ComputationGraph network = ModelSerializer.restoreComputationGraph(TRAINED_MODEL);
+        log.info("Going to test single image");
+        NativeImageLoader loader = new NativeImageLoader(HEIGHT, WIDTH, CHANNELS);
+
+        File imageFile = new File("C:/Users/Ann/Desktop/diploma/corn-classification/extracted-corns/barley/barley-1-1.png");
+        INDArray image = loader.asMatrix(imageFile);
+        INDArray output = network.outputSingle(image);
+
+        INDArray[] lab = network.getLabelMaskArrays();
+
+        List<String> labels = new ArrayList<>();
+        labels.add("barley");
+        labels.add("buckwheat");
+        labels.add("rice");
+        log.info("\n\nPredictions:");
+        for( int i=0; i<labels.size(); i++ ){
+            log.info("P(" + labels.get(i) + ") = " + output.getDouble(i));
+        }
     }
 }
