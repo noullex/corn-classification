@@ -1,46 +1,30 @@
 package utils.imagePreprocessing;
 
 import sun.misc.Queue;
-import utils.Utils;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
-import static utils.Constants.*;
 
 public class CornExtractor {
 
-    public static void extractCorns() throws IOException, InterruptedException {
-        File backgroundFile = Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE);
-        BufferedImage background = ImageIO.read(backgroundFile);
-
-        List<String> types = Arrays.stream(Objects.requireNonNull(Utils.getFileFromResources(DATA_FOLDER).listFiles(File::isDirectory)))
-                .map(File::getName).collect(Collectors.toList());
-        for (String type : types) {
-            File folder = Utils.getFileFromResources(DATA_FOLDER + type);
-            File[] listOfFiles = folder.listFiles();
-            if (listOfFiles == null || listOfFiles.length == 0) {
-                throw new IllegalArgumentException(String.format("There are no images for type %s", type));
+    public static Map<Corn, BufferedImage> extract(BufferedImage image, BufferedImage background) throws InterruptedException {
+        List<Corn> corns = getCornsFromImage(image, background);
+        Map<Corn, BufferedImage> extraction = new HashMap<>();
+        for (int i = 0; i < corns.size(); i++) {
+            Corn corn = corns.get(i);
+            BufferedImage cornImage = new BufferedImage(corn.maxX - corn.minX + 1, corn.maxY - corn.minY + 1, TYPE_INT_RGB);
+            for (Point pixel : corn.points) {
+                cornImage.setRGB(pixel.x - corn.minX, pixel.y - corn.minY, image.getRGB(pixel.x, pixel.y));
             }
-            int fileNumber = 1;
-            for (File file : listOfFiles) {
-                if (file.isFile()) {
-                    BufferedImage image = ImageIO.read(file);
-                    List<Corn> corns = getCornsFromImage(image, background);
-                    saveCornsImages(image, type, fileNumber, corns);
-                    fileNumber++;
-                }
-            }
+            extraction.put(corn, cornImage);
         }
+        return extraction;
     }
 
     private static List<Corn> getCornsFromImage(BufferedImage image, BufferedImage background) throws InterruptedException {
@@ -84,23 +68,8 @@ public class CornExtractor {
         return result;
     }
 
-
-    private static void saveCornsImages(BufferedImage originalImage, String type, int fileNumber, List<Corn> corns) throws IOException {
-        File folder = new File(EXTRACTED_DATA_FOLDER + type);
-        folder.mkdirs();
-        for (int i = 0; i < corns.size(); i++) {
-            Corn corn = corns.get(i);
-            BufferedImage cornImage = new BufferedImage(corn.maxX - corn.minX + 1, corn.maxY - corn.minY + 1, TYPE_INT_RGB);
-            for (Point pixel : corn.points) {
-                cornImage.setRGB(pixel.x - corn.minX, pixel.y - corn.minY, originalImage.getRGB(pixel.x, pixel.y));
-            }
-            ImageIO.write(cornImage, "png", new File(EXTRACTED_DATA_FOLDER + type,
-                    type + "-" + fileNumber + "-" + i + ".png"));
-        }
-    }
-
     public static class Corn {
         int minX, minY, maxX, maxY;
-        List<Point> points = new ArrayList<>();
+        public List<Point> points = new ArrayList<>();
     }
 }

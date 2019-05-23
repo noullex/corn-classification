@@ -26,11 +26,14 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.Utils;
+import utils.imagePreprocessing.CornExtractor;
+import utils.imagePreprocessing.CornExtractor.Corn;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static utils.Constants.*;
 
@@ -99,24 +102,34 @@ public class NetworkController {
         ModelSerializer.writeModel(vgg16Transfer, locationToSave, true);
     }
 
-    public void testNetwork() throws IOException {
+    public void testNetwork(BufferedImage image, BufferedImage background) throws IOException, InterruptedException {
+        log.info("Restore saved model");
         ComputationGraph network = ModelSerializer.restoreComputationGraph(TRAINED_MODEL);
-        log.info("Going to test single image");
+
+        log.info("Test model");
+        Map<Corn, BufferedImage> corns = CornExtractor.extract(image, background);
+        Map<CornType, List<Corn>> predictions = new HashMap<>();
         NativeImageLoader loader = new NativeImageLoader(HEIGHT, WIDTH, CHANNELS);
+        for (Map.Entry<Corn, BufferedImage> entry : corns.entrySet()) {
+            Corn corn = entry.getKey();
+            BufferedImage cornImage = entry.getValue();
+            INDArray input = loader.asMatrix(cornImage);
+            INDArray prediction = network.outputSingle(input);
+            List<Double> probabilities = new ArrayList<>();
+            for (int i = 0; i < prediction.length(); i++) {
+                probabilities.add(prediction.getDouble(i));
+            }
+            double maxProbability = Collections.max(probabilities);
+            int labelPosition = probabilities.indexOf(maxProbability);
 
-        File imageFile = new File("C:/Users/Ann/Desktop/diploma/corn-classification/extracted-corns/barley/barley-1-1.png");
-        INDArray image = loader.asMatrix(imageFile);
-        INDArray output = network.outputSingle(image);
-
-        INDArray[] lab = network.getLabelMaskArrays();
-
-        List<String> labels = new ArrayList<>();
-        labels.add("barley");
-        labels.add("buckwheat");
-        labels.add("rice");
-        log.info("\n\nPredictions:");
-        for( int i=0; i<labels.size(); i++ ){
-            log.info("P(" + labels.get(i) + ") = " + output.getDouble(i));
+            CornType type = CornType.values()[labelPosition];
+            if (!predictions.containsKey(type)) {
+                predictions.put(type, new ArrayList<>());
+            }
+            predictions.get(type).add(corn);
         }
+        Utils.drawPredictions(image, predictions);
+
+        log.info(Utils.getPredictionsStats(predictions));
     }
 }

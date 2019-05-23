@@ -8,11 +8,16 @@ import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.VGG16ImagePreProcessor;
+import utils.Utils;
 import utils.imagePreprocessing.CornExtractor;
+import utils.imagePreprocessing.CornExtractor.Corn;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.datavec.image.loader.BaseImageLoader.ALLOWED_FORMATS;
 import static utils.Constants.*;
@@ -31,7 +36,8 @@ public class CornDataSetIterator {
     }
 
     public static void setup() throws IOException, InterruptedException {
-        CornExtractor.extractCorns();
+        preprocessData();
+
         Random rng = new Random(10);
         File parentDir = new File(EXTRACTED_DATA_FOLDER);
         FileSplit filesInDir = new FileSplit(parentDir, ALLOWED_FORMATS, rng);
@@ -39,6 +45,31 @@ public class CornDataSetIterator {
         InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter, TRAIN_PERCENT, 100 - TRAIN_PERCENT);
         trainData = filesInDirSplit[0];
         testData = filesInDirSplit[1];
+    }
+
+    private static void preprocessData() throws IOException, InterruptedException {
+        File backgroundFile = Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE);
+        BufferedImage background = ImageIO.read(backgroundFile);
+
+        List<String> types = Arrays.stream(Objects.requireNonNull(Utils.getFileFromResources(DATA_FOLDER).listFiles(File::isDirectory)))
+                .map(File::getName).collect(Collectors.toList());
+        for (String type : types) {
+            File dataFolder = Utils.getFileFromResources(DATA_FOLDER + type);
+            File[] listOfFiles = dataFolder.listFiles();
+            if (listOfFiles == null || listOfFiles.length == 0) {
+                throw new IllegalArgumentException(String.format("There are no images for type %s", type));
+            }
+            int fileNumber = 0;
+            for (File file : listOfFiles) {
+                if (file.isFile()) {
+                    BufferedImage image = ImageIO.read(file);
+                    Map<Corn, BufferedImage> corns = CornExtractor.extract(image, background);
+                    String folder = EXTRACTED_DATA_FOLDER + type;
+                    String baseFile = type + "-" + ++fileNumber;
+                    Utils.saveListImages(corns.values(), folder, baseFile);
+                }
+            }
+        }
     }
 
     private static DataSetIterator makeIterator(InputSplit sample) throws IOException {
