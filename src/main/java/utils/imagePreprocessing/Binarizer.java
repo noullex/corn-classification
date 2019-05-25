@@ -24,9 +24,9 @@ public class Binarizer {
 
     public static byte[][] binarize(int[][] input) {
         int[] hist = new int[256];
-        for (int x = 0; x < input.length; x++) {
-            for (int y = 0; y < input[0].length; y++) {
-                int t = input[x][y] > 255 ? 255 : input[x][y];
+        for (int y = 0; y < input.length; y++) {
+            for (int x = 0; x < input[0].length; x++) {
+                int t = input[y][x] > 255 ? 255 : input[y][x];
                 hist[t]++;
             }
         }
@@ -59,12 +59,12 @@ public class Binarizer {
         }
 
         byte[][] result = new byte[input.length][input[0].length];
-        for (int x = 0; x < input.length; x++) {
-            for (int y = 0; y < input[0].length; y++) {
-                if (input[x][y] >= maxBcVarianceThreshold) {
-                    result[x][y] = 1;
+        for (int y = 0; y < input.length; y++) {
+            for (int x = 0; x < input[0].length; x++) {
+                if (input[y][x] >= maxBcVarianceThreshold) {
+                    result[y][x] = 1;
                 } else {
-                    result[x][y] = 0;
+                    result[y][x] = 0;
                 }
             }
         }

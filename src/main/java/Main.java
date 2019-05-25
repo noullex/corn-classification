@@ -18,8 +18,8 @@ public class Main {
     public static void main(String[] args) {
         log.info("Start corns classification");
         try {
-//            runNetwork();
-            runThresholding();
+            runNetwork();
+//            runThresholding();
         } catch (Exception exception) {
             log.error("Unexpectedly shutdown", exception);
             System.exit(-1);
@@ -28,12 +28,20 @@ public class Main {
 
     private static void runNetwork() throws IOException, InterruptedException {
         NetworkController networkController = new NetworkController();
+//        runNetworkInTrainMode(networkController);
+        runNetworkInTestMode(networkController);
+    }
+
+    private static void runNetworkInTrainMode(NetworkController networkController) throws IOException, InterruptedException {
         networkController.trainNetwork();
-//        File imageFile = Utils.getFileFromResources(TEST_DATA_FOLDER + "buckwheat_and_barley_1_2.bmp");
-//        BufferedImage image = ImageIO.read(imageFile);
-//        File backgroundFile = Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE);
-//        BufferedImage background = ImageIO.read(backgroundFile);
-//        networkController.testNetwork(image, background);
+    }
+
+    private static void runNetworkInTestMode(NetworkController networkController) throws IOException, InterruptedException {
+        File imageFile = Utils.getFileFromResources(TEST_DATA_FOLDER + "buckwheat_and_barley_2_1.bmp");
+        BufferedImage image = ImageIO.read(imageFile);
+        File backgroundFile = Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE);
+        BufferedImage background = ImageIO.read(backgroundFile);
+        networkController.testNetwork(image, background);
     }
 
     private static void runThresholding() throws IOException {
