@@ -9,12 +9,12 @@ public class Binarizer {
         if (image.getWidth() != background.getWidth() || image.getHeight() != image.getHeight()) {
             throw new IllegalArgumentException("subtraction arguments must have the same dimensions");
         }
-        int[][] result = new int[image.getWidth()][image.getHeight()];
-        for (int x = 0; x < image.getWidth(); x++) {
-            for (int y = 0; y < image.getHeight(); y++) {
+        int[][] result = new int[image.getHeight()][image.getWidth()];
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
                 Color pixelA = new Color(image.getRGB(x, y));
                 Color pixelB = new Color(background.getRGB(x, y));
-                result[x][y] = (int) Math.sqrt(Math.pow((pixelA.getRed() - pixelB.getRed()), 2) +
+                result[y][x] = (int) Math.sqrt(Math.pow((pixelA.getRed() - pixelB.getRed()), 2) +
                         Math.pow((pixelA.getGreen() - pixelB.getGreen()), 2) +
                         Math.pow((pixelA.getBlue() - pixelB.getBlue()), 2));
             }

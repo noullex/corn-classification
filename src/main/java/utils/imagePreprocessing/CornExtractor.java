@@ -16,8 +16,7 @@ public class CornExtractor {
     public static Map<Corn, BufferedImage> extract(BufferedImage image, BufferedImage background) throws InterruptedException {
         List<Corn> corns = getCornsFromImage(image, background);
         Map<Corn, BufferedImage> extraction = new HashMap<>();
-        for (int i = 0; i < corns.size(); i++) {
-            Corn corn = corns.get(i);
+        for (Corn corn : corns) {
             BufferedImage cornImage = new BufferedImage(corn.maxX - corn.minX + 1, corn.maxY - corn.minY + 1, TYPE_INT_RGB);
             for (Point pixel : corn.points) {
                 cornImage.setRGB(pixel.x - corn.minX, pixel.y - corn.minY, image.getRGB(pixel.x, pixel.y));
@@ -32,10 +31,10 @@ public class CornExtractor {
         Queue<Point> curPoints = new Queue<>();
         List<Corn> result = new ArrayList<>();
         byte curLabel = 2;
-        for (int x = 0; x < binaryImage.length; x++) {
-            for (int y = 0; y < binaryImage[0].length; y++) {
-                if (binaryImage[x][y] == 1) {
-                    binaryImage[x][y] = curLabel;
+        for (int y = 0; y < binaryImage.length; y++) {
+            for (int x = 0; x < binaryImage[0].length; x++) {
+                if (binaryImage[y][x] == 1) {
+                    binaryImage[y][x] = curLabel;
                     Corn corn = new Corn();
                     corn.minX = corn.maxX = x;
                     corn.minY = corn.maxY = y;
@@ -51,9 +50,9 @@ public class CornExtractor {
                             for (int dy = -1; dy <= 1; dy++) {
                                 int nx = p.x + dx;
                                 int ny = p.y + dy;
-                                if (nx >= 0 && ny >= 0 && nx < binaryImage.length && ny < binaryImage[0].length
-                                        && binaryImage[nx][ny] == 1 && dy != dx && -dy != dx) {
-                                    binaryImage[nx][ny] = curLabel;
+                                if (nx >= 0 && ny >= 0 && nx < binaryImage[0].length && ny < binaryImage.length
+                                        && binaryImage[ny][nx] == 1 && dy != dx && -dy != dx) {
+                                    binaryImage[ny][nx] = curLabel;
                                     curPoints.enqueue(new Point(nx, ny));
                                 }
                             }
