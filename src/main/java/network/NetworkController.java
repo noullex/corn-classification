@@ -42,6 +42,11 @@ public class NetworkController {
     private static final Logger log = LoggerFactory.getLogger(NetworkController.class);
 
     public void trainNetwork() throws IOException, InterruptedException {
+        log.info("Get corn dataset");
+        CornDataSetIterator.setup();
+        DataSetIterator trainIter = CornDataSetIterator.trainIterator();
+        DataSetIterator testIter = CornDataSetIterator.testIterator();
+
         log.info("Loading VGG16 model");
         ZooModel zooModel = new VGG16();
         ComputationGraph vgg16 = (ComputationGraph) zooModel.initPretrained(PretrainedType.IMAGENET);
@@ -68,10 +73,6 @@ public class NetworkController {
                         "fc2")
                 .build();
         log.info(vgg16Transfer.summary());
-
-        CornDataSetIterator.setup();
-        DataSetIterator trainIter = CornDataSetIterator.trainIterator();
-        DataSetIterator testIter = CornDataSetIterator.testIterator();
 
         UIServer uiServer = UIServer.getInstance();
         StatsStorage statsStorage = new InMemoryStatsStorage();

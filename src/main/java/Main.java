@@ -18,8 +18,8 @@ public class Main {
     public static void main(String[] args) {
         log.info("Start corns classification");
         try {
-            runNetwork();
-//            runThresholding();
+//            runNetwork();
+            runThresholding();
         } catch (Exception exception) {
             log.error("Unexpectedly shutdown", exception);
             System.exit(-1);
@@ -46,6 +46,6 @@ public class Main {
 
     private static void runThresholding() throws IOException {
         ThresholdController thresholdController = new ThresholdController();
-        thresholdController.binarize();
+        thresholdController.sort();
     }
 }
