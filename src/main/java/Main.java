@@ -24,8 +24,8 @@ public class Main {
             BufferedImage image = ImageIO.read(imageFile);
             File backgroundFile = Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE);
             BufferedImage background = ImageIO.read(backgroundFile);
-            runNetwork(image, background);
-//            runThresholding(image, background);
+//            runNetwork(image, background);
+            runThresholding(image, background);
         } catch (Exception exception) {
             log.error("Unexpectedly shutdown", exception);
             System.exit(-1);

@@ -1,16 +1,14 @@
 package thresholding;
 
 class CornInterval {
-    public  CornInterval(){
-    }
+
+    private int leftBorder;
+    private int rightBorder;
 
     public CornInterval(int leftBorder, int rightBorder) {
         this.leftBorder = leftBorder;
         this.rightBorder = rightBorder;
     }
-
-    private int leftBorder;
-    private int rightBorder;
 
     public int getLeftBorder() {
         return leftBorder;
