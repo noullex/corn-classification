@@ -45,7 +45,7 @@ public class ThresholdController {
                 currentCornIntervals.add(new CornInterval(currentLeftBorders.get(i), currentRightBorders.get(i)));
             }
 
-            params = calculateCornParams(currentCornIntervals, params);
+            params = calculateCornParams(previousCornIntervals, params);
             List<List<Integer>> defectiveCornsParams = contourAnalysis(binaryImage[y], previousCornIntervals, params,
                     20, 35,
                     3, 7,
