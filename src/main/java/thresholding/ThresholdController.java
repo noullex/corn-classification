@@ -1,26 +1,22 @@
 package thresholding;
 
-import utils.Utils;
-
-import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import static utils.Constants.*;
 
 public class ThresholdController {
 
-    public void sort() throws IOException {
-        BufferedImage image = ImageIO.read(Utils.getFileFromResources(TEST_DATA_FOLDER + "buckwheat_and_barley_1_2.bmp"));
-        BufferedImage background = ImageIO.read(Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE));
+    private int width;
+    private int height;
 
+    public List<Point> getDefectiveCorns(BufferedImage image, BufferedImage background) {
 //        int width = image.getWidth();
 //        int height = image.getHeight();
 //        byte[][] binaryImage = Binarizer.binarize(Binarizer.subtract(background, image));
-        int width = 24;
-        int height = 8;
+        width = 24;
+        height = 8;
         byte[][] binaryImage = {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -32,6 +28,7 @@ public class ThresholdController {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
 
+        List<Point> defectiveCorns = new ArrayList<>();
         CornParameters params = new CornParameters(width);
         List<Integer> previousLeftBorders = new ArrayList<>();
         List<Integer> previousRightBorders = new ArrayList<>();
@@ -46,27 +43,39 @@ public class ThresholdController {
                     currentRightBorders.add(x);
                 }
             }
-            calculateCornParams(currentLeftBorders, currentRightBorders, previousLeftBorders, previousRightBorders, params);
-            contourAnalysis(binaryImage[y], previousLeftBorders, previousRightBorders, params,
+            if(currentLeftBorders.size()==0){
+                params.prepareParamsForUpdate(0,23);
+            }
+
+            calculateCornParams(previousLeftBorders, previousRightBorders,
+                    currentLeftBorders, currentRightBorders, params);
+            List<List<Integer>> defectiveCornsParams = contourAnalysis(binaryImage[y], previousLeftBorders, previousRightBorders, params,
                     20, 35,
                     3, 7,
                     4, 7,
                     5, 9);
+            for (List<Integer> defectiveCornParams : defectiveCornsParams) {
+                int centerX = defectiveCornParams.get(0);
+                int centerY = ((y - defectiveCornParams.get(1)) + y) / 2;
+                Point cornCenter = new Point(centerX, centerY);
+                defectiveCorns.add(cornCenter);
+            }
             previousLeftBorders = currentLeftBorders;
             previousRightBorders = currentRightBorders;
         }
+        return defectiveCorns;
     }
 
-    private void calculateCornParams(List<Integer> currentLeftBorders, List<Integer> currentRightBorders,
-                                     List<Integer> previousLeftBorders, List<Integer> previousRightBorders,
+    private void calculateCornParams(List<Integer> previousLeftBorders, List<Integer> previousRightBorders,
+                                     List<Integer> currentLeftBorders, List<Integer> currentRightBorders,
                                      CornParameters params) {
-        CornParameters tmpParams = new CornParameters(24);
-        for (int i = 0; i < previousLeftBorders.size(); i++) {
+        CornParameters tmpParams = new CornParameters(width);
+        for (int i = 0; i < currentLeftBorders.size(); i++) {
             int currentSquare = 0;
             int currentHeight = 0;
             int currentWidth = 0;
             int currentThickness = 0;
-            for (int j = previousLeftBorders.get(i); j <= previousRightBorders.get(i); j++) {
+            for (int j = currentLeftBorders.get(i); j <= currentRightBorders.get(i); j++) {
                 if (params.squares[j] != 0) {
                     currentSquare = params.squares[j];
                 }
@@ -77,29 +86,37 @@ public class ThresholdController {
                     currentThickness = params.thicknesses[j];
                 }
             }
-            currentSquare += previousRightBorders.get(i) - previousLeftBorders.get(i) + 1;
+            currentSquare += currentRightBorders.get(i) - currentLeftBorders.get(i) + 1;
             currentHeight++;
-            currentWidth = previousRightBorders.get(i) - previousLeftBorders.get(i) + 1;
-            if (currentThickness < previousRightBorders.get(i) - previousLeftBorders.get(i) + 1) {
-                currentThickness = previousRightBorders.get(i) - previousLeftBorders.get(i) + 1;
+            currentWidth = currentRightBorders.get(i) - currentLeftBorders.get(i) + 1;
+            if (currentThickness < currentRightBorders.get(i) - currentLeftBorders.get(i) + 1) {
+                currentThickness = currentRightBorders.get(i) - currentLeftBorders.get(i) + 1;
             }
 
-            for (int j = previousLeftBorders.get(i); j <= previousRightBorders.get(i); j++) {
+            for (int j = currentLeftBorders.get(i); j <= currentRightBorders.get(i); j++) {
                 tmpParams.squares[j] = currentSquare;
                 tmpParams.heights[j] = currentHeight;
                 tmpParams.widths[j] = currentWidth;
                 tmpParams.thicknesses[j] = currentThickness;
             }
-            params.getCopyOf(tmpParams, previousLeftBorders.get(i), previousRightBorders.get(i));
+
+            if(currentLeftBorders.size() < previousLeftBorders.size()){
+                params.prepareParamsForUpdate(0, 23);
+            }
+            if (previousLeftBorders.size() > i) {
+                params.prepareParamsForUpdate(previousLeftBorders.get(i), previousRightBorders.get(i));
+            }
+            params.getCopyOf(tmpParams, currentLeftBorders.get(i), currentRightBorders.get(i));
         }
     }
 
-    private void contourAnalysis(byte[] contour, List<Integer> previousLeftBorders, List<Integer> previousRightBorders,
-                                 CornParameters params,
-                                 int thresholdSquareMin, int thresholdSquareMax,
-                                 int thresholdHeightMin, int thresholdHeightMax,
-                                 int thresholdWidthMin, int thresholdWidthMax,
-                                 int thresholdThicknessMin, int thresholdThicknessMax) {
+    private List<List<Integer>> contourAnalysis(byte[] contour, List<Integer> previousLeftBorders, List<Integer> previousRightBorders,
+                                                CornParameters params,
+                                                int thresholdSquareMin, int thresholdSquareMax,
+                                                int thresholdHeightMin, int thresholdHeightMax,
+                                                int thresholdWidthMin, int thresholdWidthMax,
+                                                int thresholdThicknessMin, int thresholdThicknessMax) {
+        List<List<Integer>> defectiveCorns = new ArrayList<>();
         for (int i = 0; i < previousLeftBorders.size(); i++) {
             int sum = 0;
             int currentLeftBorder = previousLeftBorders.get(i);
@@ -113,10 +130,13 @@ public class ThresholdController {
                 boolean widthCondition = params.widths[currentLeftBorder] < thresholdWidthMin || params.widths[currentLeftBorder] > thresholdWidthMax;
                 boolean thicknessCondition = params.thicknesses[currentLeftBorder] < thresholdThicknessMin || params.thicknesses[currentLeftBorder] > thresholdThicknessMax;
                 if (squareCondition || heightCondition || widthCondition || thicknessCondition) {
-                    int bullshit = 0;
+                    int centerX = (previousRightBorders.get(i) + previousLeftBorders.get(i)) / 2;
+                    int shiftByY = params.heights[currentLeftBorder];
+                    defectiveCorns.add(Arrays.asList(centerX, shiftByY));
                 }
             }
         }
+        return defectiveCorns;
     }
 
     private class CornParameters {
@@ -142,6 +162,15 @@ public class ThresholdController {
         void getPartArrayCopy(int[] source, int[] dest, int start, int end) {
             for (int i = start; i <= end; i++) {
                 dest[i] = source[i];
+            }
+        }
+
+        void prepareParamsForUpdate(int start, int end) {
+            for (int i = start; i <= end; i++) {
+                this.squares[i] = 0;
+                this.heights[i] = 0;
+                this.widths[i] = 0;
+                this.thicknesses[i] = 0;
             }
         }
 
