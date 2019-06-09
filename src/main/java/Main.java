@@ -20,12 +20,12 @@ public class Main {
     public static void main(String[] args) {
         log.info("Start corns classification");
         try {
-            File imageFile = Utils.getFileFromResources(TEST_DATA_FOLDER + "buckwheat_and_barley_1_1.bmp");
+            File imageFile = Utils.getFileFromResources(DATA_FOLDER + "rice/" + "rice_1_1.bmp");
             BufferedImage image = ImageIO.read(imageFile);
             File backgroundFile = Utils.getFileFromResources(BACKGROUND_FOLDER + BACKGROUND_IMAGE);
             BufferedImage background = ImageIO.read(backgroundFile);
-//            runNetwork(image, background);
-            runThresholding(image, background);
+            runNetwork(image, background);
+//            runThresholding(image, background);
         } catch (Exception exception) {
             log.error("Unexpectedly shutdown", exception);
             System.exit(-1);

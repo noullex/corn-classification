@@ -7,12 +7,12 @@ public final class Constants {
     public static final String EXTRACTED_DATA_FOLDER = "extracted-corns/";
     public static final String TEST_DATA_FOLDER = "images/mixture/";
 
-    public static final String TRAINED_MODEL = "trained-model-2-classes.zip";
+    public static final String TRAINED_MODEL = "trained-model-buckwheat-rice.zip";
 
     public static final int NUMBER_OF_CLASSES = 2;
-    public static final int NUMBER_OF_EPOCHS = 3;
+    public static final int NUMBER_OF_EPOCHS = 5;
     public static final int TRAIN_PERCENT = 80;
-    public static final int BATCH_SIZE = 10;
+    public static final int BATCH_SIZE = 15;
     public static final long SEED = 12345;
 
     public static final int HEIGHT = 224;

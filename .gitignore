@@ -6,6 +6,7 @@ target/
 
 #NN files
 extracted-corns/
-trained-model-2-classes.zip
-trained-model-3-classes.zip
+trained-model-barley-buckwheat.zip
+trained-model-buckwheat-rice.zip
+trained-model-barley-buckwheat-rice.zip
 result.png

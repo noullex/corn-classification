@@ -87,7 +87,7 @@ public class NetworkController {
                 DataSet trained = trainIter.next();
                 vgg16Transfer.fit(trained);
                 if (iter % 10 == 0) {
-                    log.info("Evaluate model at iter " + iter + " ....");
+                    log.info("Evaluate model at iter " + (iter + 1) + " ....");
                     eval = vgg16Transfer.evaluate(testIter);
                     log.info(eval.stats());
                     testIter.reset();
