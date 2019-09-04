@@ -1,33 +1,35 @@
 package thresholding;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.ClassThresholds;
 import utils.CornInterval;
+import utils.Utils;
+import utils.imagePreprocessing.Binarizer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ThresholdController {
+    private static final Logger log = LoggerFactory.getLogger(ThresholdController.class);
 
     private int width;
     private int height;
 
-    public List<Point> getDefectiveCorns(ClassThresholds classThresholds, BufferedImage image, BufferedImage background) {
-        width = 24;
-        height = 8;
-        byte[][] binaryImage = {
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0},
-                {0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0},
-                {0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0},
-                {0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-        };
+    public void separate(ClassThresholds classThresholds, BufferedImage image, BufferedImage background) throws IOException {
+        List<Point> defectiveCorns = getDefectiveCorns(classThresholds, image, background);
+        Utils.drawDefectiveCorns(image, defectiveCorns);
+        log.info(Utils.getSeparationStats(defectiveCorns));
+    }
 
+    private List<Point> getDefectiveCorns(ClassThresholds classThresholds, BufferedImage image, BufferedImage background) {
+        width = image.getWidth();
+        height = image.getHeight();
+        byte[][] binaryImage = Binarizer.binarize(Binarizer.subtract(image, background));
         List<Point> defectiveCorns = new ArrayList<>();
         CornParameters params = new CornParameters(width);
         List<CornInterval> previousCornIntervals = new ArrayList<>();

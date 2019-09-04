@@ -1,5 +1,6 @@
 package network;
 
+import org.apache.commons.io.FileUtils;
 import org.datavec.image.loader.NativeImageLoader;
 import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.eval.Evaluation;
@@ -35,6 +36,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
@@ -102,15 +104,26 @@ public class NetworkController {
 
         File locationToSave = new File("trained-model.zip");
         ModelSerializer.writeModel(vgg16Transfer, locationToSave, true);
+        //TODO добавить сохранение лейблов
     }
 
     public Map<CornType, List<Corn>> testNetwork(BufferedImage image, BufferedImage background) throws IOException, InterruptedException {
         log.info("Restore saved model");
         ComputationGraph network = ModelSerializer.restoreComputationGraph(TRAINED_MODEL);
 
+        log.info("Restore labels from saved model");
+        List<CornType> labels = FileUtils.readLines(new File(TRAINED_MODEL_LABELS), "utf-8")
+                .stream()
+                .map(stringLabel -> CornType.valueOf(stringLabel))
+                .collect(Collectors.toList());
+
         log.info("Test model");
         Map<Corn, BufferedImage> corns = CornExtractor.extract(image, background);
         Map<CornType, List<Corn>> predictions = new HashMap<>();
+        predictions.put(CornType.UNKNOWN, new ArrayList<>());
+        for (CornType type : labels) {
+            predictions.put(type, new ArrayList<>());
+        }
         NativeImageLoader loader = new NativeImageLoader(HEIGHT, WIDTH, CHANNELS);
         for (Map.Entry<Corn, BufferedImage> entry : corns.entrySet()) {
             Corn corn = entry.getKey();
@@ -122,13 +135,15 @@ public class NetworkController {
                 probabilities.add(prediction.getDouble(i));
             }
             double maxProbability = Collections.max(probabilities);
-            int labelPosition = probabilities.indexOf(maxProbability);
-
-            CornType type = CornType.values()[labelPosition];
-            if (!predictions.containsKey(type)) {
-                predictions.put(type, new ArrayList<>());
-            }
-            predictions.get(type).add(corn);
+            double minProbability = Collections.min(probabilities);
+            //TODO считать трешхолды более корректно
+//            if (minProbability / maxProbability < 0.5) {
+                int labelPosition = probabilities.indexOf(maxProbability);
+                CornType type = labels.get(labelPosition);
+                predictions.get(type).add(corn);
+//            } else {
+//                predictions.get(CornType.UNKNOWN).add(corn);
+//            }
         }
         Utils.drawPredictions(image, predictions);
         log.info(Utils.getPredictionsStats(predictions));

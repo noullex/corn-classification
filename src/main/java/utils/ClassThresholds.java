@@ -8,13 +8,13 @@ public class ClassThresholds {
     private int widthMin;
     private int widthMax;
 
-    public ClassThresholds(){
-        squareMin = 0;
-        squareMax = 0;
-        heightMax = 0;
-        heightMin = 0;
-        widthMin = 0;
-        widthMax = 0;
+    public ClassThresholds() {
+    }
+
+    public void init(Corn corn) {
+        squareMin = squareMax = corn.getPoints().size();
+        widthMin = widthMax = corn.getMaxX() - corn.getMinX();
+        heightMin = heightMax = corn.getMaxY() - corn.getMinY();
     }
 
     public int getSquareMin() {

@@ -7,7 +7,8 @@ public final class Constants {
     public static final String EXTRACTED_DATA_FOLDER = "extracted-corns/";
     public static final String TEST_DATA_FOLDER = "images/mixture/";
 
-    public static final String TRAINED_MODEL = "trained-model-buckwheat-rice.zip";
+    public static final String TRAINED_MODEL = "trained-model-barley-buckwheat.zip";
+    public static final String TRAINED_MODEL_LABELS = "trained-model-barley-buckwheat-labels.txt";
 
     public static final int NUMBER_OF_CLASSES = 2;
     public static final int NUMBER_OF_EPOCHS = 5;
