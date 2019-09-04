@@ -10,7 +10,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.VGG16ImagePreProcessor;
 import utils.Utils;
 import utils.imagePreprocessing.CornExtractor;
-import utils.imagePreprocessing.CornExtractor.Corn;
+import utils.Corn;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

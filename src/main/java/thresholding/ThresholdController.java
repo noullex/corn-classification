@@ -1,5 +1,8 @@
 package thresholding;
 
+import utils.ClassThresholds;
+import utils.CornInterval;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -11,7 +14,7 @@ public class ThresholdController {
     private int width;
     private int height;
 
-    public List<Point> getDefectiveCorns(BufferedImage image, BufferedImage background) {
+    public List<Point> getDefectiveCorns(ClassThresholds classThresholds, BufferedImage image, BufferedImage background) {
         width = 24;
         height = 8;
         byte[][] binaryImage = {
@@ -47,10 +50,9 @@ public class ThresholdController {
 
             params = calculateCornParams(previousCornIntervals, params);
             List<List<Integer>> defectiveCornsParams = contourAnalysis(binaryImage[y], previousCornIntervals, params,
-                    20, 35,
-                    3, 7,
-                    4, 7,
-                    5, 9);
+                    classThresholds.getSquareMin(), classThresholds.getSquareMax(),
+                    classThresholds.getHeightMin(), classThresholds.getHeightMax(),
+                    classThresholds.getWidthMin(), classThresholds.getWidthMax());
             for (List<Integer> defectiveCornParams : defectiveCornsParams) {
                 int centerX = defectiveCornParams.get(0);
                 int centerY = ((y - defectiveCornParams.get(1)) + y) / 2;
@@ -70,7 +72,6 @@ public class ThresholdController {
             int currentSquare = 0;
             int currentHeight = 0;
             int currentWidth = 0;
-            int currentThickness = 0;
             for (int j = currentLeftBorder; j <= currentRightBorder; j++) {
                 if (params.squares[j] != 0) {
                     currentSquare = params.squares[j];
@@ -78,22 +79,20 @@ public class ThresholdController {
                 if (params.heights[j] != 0) {
                     currentHeight = params.heights[j];
                 }
-                if (params.thicknesses[j] != 0) {
-                    currentThickness = params.thicknesses[j];
+                if (params.width[j] != 0) {
+                    currentWidth = params.width[j];
                 }
             }
             currentSquare += currentRightBorder - currentLeftBorder + 1;
             currentHeight++;
-            currentWidth = currentRightBorder - currentLeftBorder + 1;
-            if (currentThickness < currentRightBorder - currentLeftBorder + 1) {
-                currentThickness = currentRightBorder - currentLeftBorder + 1;
+            if (currentWidth < currentRightBorder - currentLeftBorder + 1) {
+                currentWidth = currentRightBorder - currentLeftBorder + 1;
             }
 
             for (int j = currentLeftBorder; j <= currentRightBorder; j++) {
                 tmpParams.squares[j] = currentSquare;
                 tmpParams.heights[j] = currentHeight;
-                tmpParams.widths[j] = currentWidth;
-                tmpParams.thicknesses[j] = currentThickness;
+                tmpParams.width[j] = currentWidth;
             }
         }
         return tmpParams;
@@ -103,8 +102,7 @@ public class ThresholdController {
                                                 CornParameters params,
                                                 int thresholdSquareMin, int thresholdSquareMax,
                                                 int thresholdHeightMin, int thresholdHeightMax,
-                                                int thresholdWidthMin, int thresholdWidthMax,
-                                                int thresholdThicknessMin, int thresholdThicknessMax) {
+                                                int thresholdWidthMin, int thresholdWidthMax) {
         List<List<Integer>> defectiveCorns = new ArrayList<>();
         for (CornInterval previousCornInterval : previousCornIntervals) {
             int sum = 0;
@@ -116,9 +114,8 @@ public class ThresholdController {
             if (sum == 0) {
                 boolean squareCondition = params.squares[currentLeftBorder] < thresholdSquareMin || params.squares[currentLeftBorder] > thresholdSquareMax;
                 boolean heightCondition = params.heights[currentLeftBorder] < thresholdHeightMin || params.heights[currentLeftBorder] > thresholdHeightMax;
-                boolean widthCondition = params.widths[currentLeftBorder] < thresholdWidthMin || params.widths[currentLeftBorder] > thresholdWidthMax;
-                boolean thicknessCondition = params.thicknesses[currentLeftBorder] < thresholdThicknessMin || params.thicknesses[currentLeftBorder] > thresholdThicknessMax;
-                if (squareCondition || heightCondition || widthCondition || thicknessCondition) {
+                boolean widthCondition = params.width[currentLeftBorder] < thresholdWidthMin || params.width[currentLeftBorder] > thresholdWidthMax;
+                if (squareCondition || heightCondition || widthCondition) {
                     int centerX = (previousCornInterval.getRightBorder() + previousCornInterval.getLeftBorder()) / 2;
                     int shiftByY = params.heights[currentLeftBorder];
                     defectiveCorns.add(Arrays.asList(centerX, shiftByY));

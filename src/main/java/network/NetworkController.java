@@ -26,9 +26,10 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.Corn;
+import utils.CornType;
 import utils.Utils;
 import utils.imagePreprocessing.CornExtractor;
-import utils.imagePreprocessing.CornExtractor.Corn;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -103,7 +104,7 @@ public class NetworkController {
         ModelSerializer.writeModel(vgg16Transfer, locationToSave, true);
     }
 
-    public void testNetwork(BufferedImage image, BufferedImage background) throws IOException, InterruptedException {
+    public Map<CornType, List<Corn>> testNetwork(BufferedImage image, BufferedImage background) throws IOException, InterruptedException {
         log.info("Restore saved model");
         ComputationGraph network = ModelSerializer.restoreComputationGraph(TRAINED_MODEL);
 
@@ -130,7 +131,8 @@ public class NetworkController {
             predictions.get(type).add(corn);
         }
         Utils.drawPredictions(image, predictions);
-
         log.info(Utils.getPredictionsStats(predictions));
+
+        return predictions;
     }
 }

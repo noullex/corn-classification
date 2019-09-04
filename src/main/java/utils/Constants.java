@@ -19,9 +19,4 @@ public final class Constants {
     public static final int WIDTH = 224;
     public static final int CHANNELS = 3;
 
-    public enum CornType {
-        BARLEY,
-        BUCKWHEAT,
-        RICE
-    }
 }

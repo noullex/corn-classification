@@ -1,6 +1,6 @@
-package thresholding;
+package utils;
 
-class CornInterval {
+public class CornInterval {
 
     private int leftBorder;
     private int rightBorder;

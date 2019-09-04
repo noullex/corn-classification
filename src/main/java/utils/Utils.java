@@ -1,8 +1,5 @@
 package utils;
 
-import utils.Constants.CornType;
-import utils.imagePreprocessing.CornExtractor.Corn;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -76,5 +73,22 @@ public class Utils {
             Color newColor = new Color(x * originalColor.getRed(), y * originalColor.getGreen(), z * originalColor.getBlue());
             image.setRGB(pixel.x, pixel.y, newColor.getRGB());
         }
+    }
+
+    public static ClassThresholds getThresholdsFromCorns(List<Corn> corns){
+        ClassThresholds classThresholds = new ClassThresholds();
+        int square, width, height;
+        for (Corn corn : corns){
+            square = corn.getPoints().size();
+            width = corn.getMaxX() - corn.getMinX();
+            height = corn.getMaxY() - corn.getMinY();
+            if(square > classThresholds.getSquareMax()) classThresholds.setSquareMax(square);
+            if(square < classThresholds.getSquareMin()) classThresholds.setSquareMin(square);
+            if(height > classThresholds.getHeightMax()) classThresholds.setHeightMax(height);
+            if(height < classThresholds.getHeightMin()) classThresholds.setHeightMin(height);
+            if(width > classThresholds.getWidthMax()) classThresholds.setWidthMax(square);
+            if(width < classThresholds.getWidthMin()) classThresholds.setWidthMin(square);
+        }
+        return classThresholds;
     }
 }
